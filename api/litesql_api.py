@@ -30,18 +30,31 @@ class LiteSQLApi:
         result_dict={}
         for word in word_array:
             self.db_cursor.execute("SELECT "+self.key_ans+" FROM "+self.database_name+" WHERE "+self.key_word+" LIKE '"+word+"'")
-            time_text=self.parse_result(self.db_cursor.fetchall())
+            time_text,example_string=self.parse_result(self.db_cursor.fetchall())
             result_dict[time_text[0]]=time_text[1:]
             #print(', '.join(result_dict[time_text[0]]))
-    	return (result_dict)
+    	return result_dict,example_string
+    def find_example(self,all_word_string):
+        time_array=all_word_string.split('\n')
+        example_string=[]
+        clear_string=[]
+        for array_index in range(len(time_array)-1):
+            if ':' in time_array[array_index] :
+                example_string.append(time_array[array_index+1])
+                array_index=array_index+2
+            else:
+                clear_string.append(time_array[array_index])
+
+        return example_string,'\n'.join(clear_string)
+
 
     def parse_result(self,result):
         time_array=[]
         # Need test for 0,0 result. Maybe we find 0,2.
         time_str=result[0][0]
         time_str=self.remove_number(time_str)
-        #TODO: Add parser for example
-        return self.getWords(time_str)
+        example_string,time_str=self.find_example(time_str)
+        return self.getWords(time_str),example_string
 
 
     def remove_number(self,text):
